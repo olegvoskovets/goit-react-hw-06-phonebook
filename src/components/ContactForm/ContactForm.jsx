@@ -1,9 +1,14 @@
-import PropTypes from 'prop-types';
 import React, { useState } from 'react';
 import css from '../App/App.module.css';
+import { useDispatch, useSelector } from 'react-redux';
+import { nanoid } from '@reduxjs/toolkit';
+import { addContact } from 'redux/contactsSlice';
+import { selectContacts } from 'redux/selectors';
 
-export const ContactForm = ({ addContact }) => {
+export const ContactForm = () => {
   const [contact, setContact] = useState({ name: '', number: '' });
+  const contacts = useSelector(selectContacts);
+  const dispatch = useDispatch();
 
   const handleChange = e => {
     setContact(prevState => ({
@@ -11,9 +16,25 @@ export const ContactForm = ({ addContact }) => {
       [e.target.name]: e.target.value,
     }));
   };
+  const checkName = name => {
+    return contacts.find(contact => contact.name === name);
+  };
+
   const handleSubmitaddContact = e => {
     e.preventDefault();
-    addContact(contact);
+    if (checkName(contact.name)) {
+      setContact({
+        name: '',
+        number: '',
+      });
+      alert('Такий контакт існує ...');
+
+      return;
+    }
+
+    const newContact = contact;
+    contact.id = nanoid();
+    dispatch(addContact(newContact));
     setContact({
       name: '',
       number: '',
@@ -54,8 +75,4 @@ export const ContactForm = ({ addContact }) => {
       <button type="submit">Add contact</button>
     </form>
   );
-};
-
-ContactForm.propTypes = {
-  addContact: PropTypes.func.isRequired,
 };
